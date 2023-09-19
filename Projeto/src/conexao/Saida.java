@@ -14,6 +14,14 @@ public class Saida extends Thread {
         sc = new Scanner(System.in);
     }
 
+    public void enviar(String msg, String login) throws IOException {
+        fluxoSaida.writeUTF(login + "> " + msg);
+    }
+
+    public DataOutputStream getFluxo() {
+        return fluxoSaida;
+    }
+
     @Override
     public void run() {
         /*

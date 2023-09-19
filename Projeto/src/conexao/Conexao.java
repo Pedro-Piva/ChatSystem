@@ -13,6 +13,7 @@ public final class Conexao extends Thread {
     private Entrada entrada;
     private String login;
     private ArrayList<Conexao> conexoes;
+    private String nome;
 
     public Conexao(Socket socket) throws IOException {
         this.socket = socket;
@@ -26,13 +27,21 @@ public final class Conexao extends Thread {
         saida.start();
         entrada.start();
     }
-    
+
+    public Socket getSocket() {
+        return socket;
+    }
+
     public void apagar() throws IOException {
         socket.close();
     }
 
     public Entrada getEntrada() {
         return entrada;
+    }
+
+    public Saida getSaida() {
+        return saida;
     }
 
     public void atualiza(ArrayList<Conexao> conexoes) {
@@ -53,10 +62,21 @@ public final class Conexao extends Thread {
     public void printUsuarios(DataOutputStream fluxoSaida) throws IOException {
         fluxoSaida.writeUTF("Usuarios Online: ");
         for (Conexao c : conexoes) {
-            if (c.getLogin() != null) {
+            if (c.getLogin() != null && !c.getLogin().equals(login)) {
                 fluxoSaida.writeUTF(c.getLogin());
             }
         }
+    }
+
+    public Conexao nomeValido(String nome) {
+        for (Conexao c : conexoes) {
+            if (c.getLogin() != null) {
+                if (c.getLogin().equals(nome)) {
+                    return c;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -82,10 +102,30 @@ public final class Conexao extends Thread {
                 }
             }
             this.saida = new Saida(fluxoSaida);
-            this.entrada = new Entrada(fluxoEntrada);
-            tStart();
+            while (true) {
+                fluxoSaida.writeUTF("Escolha com quem Falar: ");
+                printUsuarios(fluxoSaida);
+                fluxoSaida.writeUTF("Pressione Enter para ver os Usuarios novamente.");
+                this.nome = fluxoEntrada.readUTF();
+                if (nomeValido(nome) != null) {
+                    fluxoSaida.writeUTF("Falando com " + nome);
+                    this.entrada = new Entrada(fluxoEntrada, login);
+                    this.entrada.setSaida(nomeValido(nome).getSaida());
+                    this.entrada.start();
+                    while (entrada.isAlive()) {
+                    }
+                } else if (nome.equals("desconectar")) {
+                    apagar();
+                    break;
+                } 
+            }
         } catch (IOException ex) {
-            Logger.getLogger(Conexao.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("IO " + ex);
+            try {
+                socket.close();
+            } catch (IOException ex1) {
+                Logger.getLogger(Conexao.class.getName()).log(Level.SEVERE, null, ex1);
+            }
         }
     }
 }

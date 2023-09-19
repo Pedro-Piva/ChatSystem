@@ -10,7 +10,7 @@ public class Main extends Thread {
         server.start();
         int i = 0;
         while (true) {
-            if (i == 10) {
+            if (i == 20) {
                 System.out.println("Usuarios ONLINE: ");
                 for (Conexao c : server.getConexoes()) {
                     if (c.getLogin() != null) {

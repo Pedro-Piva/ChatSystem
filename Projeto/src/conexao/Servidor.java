@@ -27,10 +27,8 @@ public class Servidor extends Thread {
     public void atualizarConexoes() throws IOException {
         ArrayList<Conexao> remover = new ArrayList();
         for (Conexao c : conexoes) {
-            if (c.getEntrada() != null) {
-                if (!c.getEntrada().isAlive()) {
-                    remover.add(c);
-                }
+            if (c.getSocket().isClosed()) {
+                remover.add(c);
             }
         }
         if (!remover.isEmpty()) {
