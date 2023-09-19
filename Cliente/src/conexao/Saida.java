@@ -21,7 +21,6 @@ public class Saida extends Thread {
             String msg = sc.nextLine();
             try {
                 fluxoSaida.writeUTF(msg);
-                System.out.println("Enviada");
             } catch (IOException ex) {
                 System.out.println("IO: " + ex.getMessage());
                 break;
