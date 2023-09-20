@@ -3,20 +3,19 @@ package conexao;
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public final class Conexao extends Thread {
 
-    private final Socket socket;
+    private Socket socket;
     private Saida saida;
-    private Entrada entrada;
     private String login;
     private ArrayList<Conexao> conexoes;
-    private String nome;
     private boolean online;
+    private boolean repetido;
+    private Conversa conversa;
 
     public Conexao(Socket socket) throws IOException {
+        repetido = false;
         this.socket = socket;
         this.online = false;
     }
@@ -25,21 +24,12 @@ public final class Conexao extends Thread {
         return login;
     }
 
-    public void tStart() {
-        saida.start();
-        entrada.start();
-    }
-
     public Socket getSocket() {
         return socket;
     }
 
-    public void apagar() throws IOException {
-        socket.close();
-    }
-
     public Entrada getEntrada() {
-        return entrada;
+        return conversa.getEntrada();
     }
 
     public Saida getSaida() {
@@ -48,9 +38,15 @@ public final class Conexao extends Thread {
 
     public void atualiza(ArrayList<Conexao> conexoes) {
         this.conexoes = conexoes;
+        if (conversa != null) {
+            conversa.atualiza(conexoes);
+            if (!conversa.isAlive()){
+                online = false;
+            }
+        }    
     }
-    
-    public boolean isOnline(){
+
+    public boolean isOnline() {
         return online;
     }
 
@@ -68,21 +64,39 @@ public final class Conexao extends Thread {
     public void printUsuarios(DataOutputStream fluxoSaida) throws IOException {
         fluxoSaida.writeUTF("Usuarios Online: ");
         for (Conexao c : conexoes) {
-            if (c.getLogin() != null && !c.getLogin().equals(login)) {
+            if (c.isOnline() && !c.getLogin().equals(login)) {
                 fluxoSaida.writeUTF(c.getLogin());
             }
         }
     }
 
-    public Conexao nomeValido(String nome) {
+    public boolean getRepetido() {
+        return repetido;
+    }
+
+    public void atualizaConexao(Socket socket) throws IOException {
+        this.socket = socket;
+        this.saida = new Saida(new DataOutputStream(socket.getOutputStream()));
+        this.online = true;
+        this.conversa = new Conversa(this.saida, new DataOutputStream(socket.getOutputStream()), new DataInputStream(socket.getInputStream()), this.login, this.conexoes);
+        this.conversa.start();
+    }
+
+    public boolean verificaConexao(String nome) {
         for (Conexao c : conexoes) {
-            if (c.getLogin() != null) {
-                if (c.getLogin().equals(nome)) {
-                    return c;
+            if (!c.isOnline()) {
+                if (c.getSocket().getInetAddress().equals(socket.getInetAddress())) {
+                    System.out.println(c.getLogin());
+                    if (c.getLogin() != null) {
+                        System.out.println(c.getLogin() + " == " + nome);
+                        if (c.getLogin().equals(nome)) {
+                            return true;
+                        }
+                    }
                 }
             }
         }
-        return null;
+        return false;
     }
 
     @Override
@@ -102,38 +116,35 @@ public final class Conexao extends Thread {
                     this.login = lixo;
                     this.online = true;
                     break;
+                } else if (verificaConexao(lixo)) {
+                    this.repetido = true;
+                    this.login = lixo;
+                    System.out.println(lixo + " Logou Novamente");
+                    fluxoSaida.writeUTF(lixo + " Logou Novamente");
+                    Thread.sleep(600);
+                    break;
                 } else {
                     System.out.println("Login Invalido ou ja existente, tente novamente");
                     fluxoSaida.writeUTF("Login Invalido ou ja existente, tente novamente");
                     printUsuarios(fluxoSaida);
                 }
             }
-            this.saida = new Saida(fluxoSaida);
-            while (true) {
-                fluxoSaida.writeUTF("Escolha com quem Falar: ");
-                printUsuarios(fluxoSaida);
-                fluxoSaida.writeUTF("Pressione Enter para ver os Usuarios novamente.");
-                this.nome = fluxoEntrada.readUTF();
-                if (nomeValido(nome) != null) {
-                    fluxoSaida.writeUTF("Falando com " + nome);
-                    this.entrada = new Entrada(fluxoEntrada, login);
-                    this.entrada.setSaida(nomeValido(nome).getSaida());
-                    this.entrada.start();
-                    while (entrada.isAlive()) {
-                    }
-                } else if (nome.equals("desconectar")) {
-                    apagar();
-                    break;
+            if (!repetido) {
+                this.saida = new Saida(fluxoSaida);
+                this.conversa = new Conversa(this.saida, fluxoSaida, fluxoEntrada, this.login, this.conexoes);
+                this.conversa.start();
+            }
+            if (conversa != null) {
+                while (conversa.isAlive()) {
                 }
             }
+            online = false;
+            conversa = null;
         } catch (IOException ex) {
             System.out.println("IO " + ex);
-            try {
-                this.online = false;
-                socket.close();
-            } catch (IOException ex1) {
-                Logger.getLogger(Conexao.class.getName()).log(Level.SEVERE, null, ex1);
-            }
+            this.online = false;
+        } catch (InterruptedException ex) {
+            System.out.println("Sleep " + ex);
         }
     }
 }

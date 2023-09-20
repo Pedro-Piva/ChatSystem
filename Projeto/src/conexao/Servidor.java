@@ -27,14 +27,29 @@ public class Servidor extends Thread {
     public void atualizarConexoes() throws IOException {
         ArrayList<Conexao> remover = new ArrayList();
         for (Conexao c : conexoes) {
-            if (c.getSocket().isClosed()) {
+            if (c.getRepetido()) {
                 remover.add(c);
             }
         }
         if (!remover.isEmpty()) {
             for (Conexao c : remover) {
-                System.out.println("Conexao " + c.getLogin() + " Removida");
-                c.apagar();
+                for (Conexao co : conexoes) {
+                    System.out.println(co.getLogin() + co.getRepetido() + c.getLogin());
+                    if (co.getLogin() != null && c.getLogin() != null) {
+                        System.out.println(c.getLogin() + " == " + co.getLogin());
+                        if (c.getLogin().equals(co.getLogin())) {
+                            if (!co.getRepetido()) {
+                                System.out.println("Old Sokcet " + co.getSocket());
+                                co.getSocket().close();
+                                co.atualizaConexao(c.getSocket());
+                                System.out.println("New Sokcet " + co.getSocket());
+                            }
+                        }
+                    }
+                }
+            }
+            for (Conexao c : remover) {
+                System.out.println("Conexao " + c.getLogin() + " Socket: " + c.getSocket() + " Removida");
                 removeConexao(c);
             }
         }
