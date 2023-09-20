@@ -12,10 +12,12 @@ public class Main extends Thread {
         while (true) {
             if (i == 20) {
                 System.out.println("Usuarios ONLINE: ");
+                int j = 1;
                 for (Conexao c : server.getConexoes()) {
-                    if (c.getLogin() != null) {
-                        System.out.println(c.getLogin());
+                    if (c.isOnline()) {
+                        System.out.println(j + "--------" + c.getLogin());
                     }
+                    j++;
                 }
                 i = 0;
             }

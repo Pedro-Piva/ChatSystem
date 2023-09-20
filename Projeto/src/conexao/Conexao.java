@@ -14,9 +14,11 @@ public final class Conexao extends Thread {
     private String login;
     private ArrayList<Conexao> conexoes;
     private String nome;
+    private boolean online;
 
     public Conexao(Socket socket) throws IOException {
         this.socket = socket;
+        this.online = false;
     }
 
     public String getLogin() {
@@ -46,6 +48,10 @@ public final class Conexao extends Thread {
 
     public void atualiza(ArrayList<Conexao> conexoes) {
         this.conexoes = conexoes;
+    }
+    
+    public boolean isOnline(){
+        return online;
     }
 
     public boolean repetido(String nome) {
@@ -94,6 +100,7 @@ public final class Conexao extends Thread {
                     System.out.println(lixo + " Logou");
                     fluxoSaida.writeUTF(lixo + " Logou");
                     this.login = lixo;
+                    this.online = true;
                     break;
                 } else {
                     System.out.println("Login Invalido ou ja existente, tente novamente");
@@ -117,11 +124,12 @@ public final class Conexao extends Thread {
                 } else if (nome.equals("desconectar")) {
                     apagar();
                     break;
-                } 
+                }
             }
         } catch (IOException ex) {
             System.out.println("IO " + ex);
             try {
+                this.online = false;
                 socket.close();
             } catch (IOException ex1) {
                 Logger.getLogger(Conexao.class.getName()).log(Level.SEVERE, null, ex1);
