@@ -23,7 +23,7 @@ public class Entrada extends Thread {
                     System.out.println("Mensagem> " + msg);
                 }
             } catch (IOException ex) {
-                System.out.println("IO: " + ex.getMessage());
+                System.out.println("IOEntradaCliente: " + ex.getMessage());
                 break;
             }
         }

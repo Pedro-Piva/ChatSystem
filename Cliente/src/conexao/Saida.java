@@ -22,7 +22,7 @@ public class Saida extends Thread {
             try {
                 fluxoSaida.writeUTF(msg);
             } catch (IOException ex) {
-                System.out.println("IO: " + ex.getMessage());
+                System.out.println("IOSaidaCliente: " + ex.getMessage());
                 break;
             }
         }
