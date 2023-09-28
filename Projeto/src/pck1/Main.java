@@ -8,22 +8,17 @@ public class Main extends Thread {
     public static void main(String[] args) throws IOException, InterruptedException {
         Servidor server = new Servidor();
         server.start();
-        int i = 0;
         while (true) {
-            if (i == 20) {
-                System.out.println("Usuarios ONLINE: ");
-                int j = 1;
-                for (Conexao c : server.getConexoes()) {
-                    if (c.isOnline()) {
-                        System.out.println(j + "--------" + c.getLogin());
-                    }
-                    j++;
+            System.out.println("Usuarios ONLINE: ");
+            int i = 1;
+            for (Conexao c : server.getConexoes()) {
+                if (c.isOnline()) {
+                    System.out.println(i + "--------" + c.getLogin() + "---" + c.getSocket());
+                    i++;
                 }
-                i = 0;
             }
-            i++;
-            server.atualizarConexoes();
-            Thread.sleep(500);
+            Thread.sleep(3000);
         }
     }
 }
+
