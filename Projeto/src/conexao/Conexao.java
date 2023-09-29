@@ -27,21 +27,29 @@ public final class Conexao extends Thread {
         return socket;
     }
 
+    public DataOutputStream getSaida() {
+        return saida;
+    }
+
     public Conversa getEntrada() {
         return conversa.getEntrada();
     }
 
-    public void atualiza(ArrayList<Conexao> conexoes) {
+    public void atualizaConexoes(ArrayList<Conexao> conexoes) {
         this.conexoes = conexoes;
         if (conversa != null) {
-            conversa.atualiza(conexoes);
+            conversa.atualizaConexoes(conexoes);
         }
     }
 
     public void desconectar() {
         for (Conexao c : conexoes) {
-            c.atualiza(conexoes);
+            c.atualizaConexoes(conexoes);
         }
+    }
+
+    public ArrayList<Conexao> getConexoes() {
+        return conexoes;
     }
 
     public boolean isOnline() {
@@ -68,15 +76,18 @@ public final class Conexao extends Thread {
         }
     }
 
-    public void atualizaConexao(Socket socket) throws IOException {
+    public void reconectar(Socket socket) throws IOException {
         this.socket = socket;
         this.saida = new DataOutputStream(socket.getOutputStream());
         this.online = true;
         this.conversa = new BatePapo(saida, new DataInputStream(socket.getInputStream()), this.login, this.conexoes);
         this.conversa.start();
+        while (conversa.isAlive()) {
+        }
+        this.online = false;
     }
 
-    public boolean verificaConexao(String nome) {
+    public boolean verificaConexaoIgual(String nome) {
         for (Conexao c : conexoes) {
             if (!c.isOnline()) {
                 if (c.getSocket().getInetAddress().equals(socket.getInetAddress())
@@ -95,47 +106,48 @@ public final class Conexao extends Thread {
         DataInputStream fluxoEntrada;
         DataOutputStream fluxoSaida;
         try {
-            fluxoEntrada = new DataInputStream(socket.getInputStream());
-            fluxoSaida = new DataOutputStream(socket.getOutputStream());
-            boolean repetido = false;
-            while (true) {
-                fluxoSaida.writeUTF("Informe o Login: ");
-                //Recebe da tela de login o login
-                String lixo = fluxoEntrada.readUTF();
-                System.out.println("Login Recebido: " + lixo);
-                if (repetido(lixo) && !lixo.equals("")) {
-                    System.out.println(lixo + " Logou");
-                    //Mensagem de sucesso
-                    fluxoSaida.writeUTF(lixo + " Logou");
-                    this.login = lixo;
-                    this.online = true;
-                    break;
-                } else if (verificaConexao(lixo)) {
-                    this.login = lixo;
-                    System.out.println(lixo + " Logou Novamente");
-                    //Mensagem de sucesso de alguém relogando
-                    fluxoSaida.writeUTF(lixo + " Logou Novamente");
-                    apagar();
-                    repetido = true;
-                    break;
-                } else {
-                    System.out.println("Login Invalido ou ja existente, tente novamente: " + lixo);
-                    //Mensagem de erro
-                    fluxoSaida.writeUTF("Login Invalido ou ja existente, tente novamente");
-                    printUsuarios(fluxoSaida);
+            if (!online) {
+                fluxoEntrada = new DataInputStream(socket.getInputStream());
+                fluxoSaida = new DataOutputStream(socket.getOutputStream());
+                boolean repetido = false;
+                while (true) {
+                    fluxoSaida.writeUTF("Informe o Login: ");
+                    //Recebe da tela de login o login
+                    String lixo = fluxoEntrada.readUTF();
+                    System.out.println("Login Recebido: " + lixo);
+                    if (repetido(lixo) && !lixo.equals("")) {
+                        System.out.println(lixo + " Logou");
+                        //Mensagem de sucesso
+                        fluxoSaida.writeUTF(lixo + " Logou");
+                        this.login = lixo;
+                        this.online = true;
+                        break;
+                    } else if (verificaConexaoIgual(lixo)) {
+                        this.login = lixo;
+                        System.out.println(lixo + " Logou Novamente");
+                        //Mensagem de sucesso de alguém relogando
+                        fluxoSaida.writeUTF(lixo + " Logou Novamente");
+                        apagar();
+                        repetido = true;
+                        break;
+                    } else {
+                        System.out.println("Login Invalido ou ja existente, tente novamente: " + lixo);
+                        //Mensagem de erro
+                        fluxoSaida.writeUTF("Login Invalido ou ja existente, tente novamente");
+                        printUsuarios(fluxoSaida);
+                    }
                 }
-            }
-            if (!repetido) {
-                this.saida = fluxoSaida;
-                this.conversa = new BatePapo(fluxoSaida, fluxoEntrada, this.login, this.conexoes);
-                this.conversa.start();
+                if (!repetido) {
+                    this.saida = fluxoSaida;
+                    this.conversa = new BatePapo(fluxoSaida, fluxoEntrada, this.login, this.conexoes);
+                    this.conversa.start();
+                }
             }
             if (conversa != null) {
                 while (conversa.isAlive()) {
                 }
             }
             online = false;
-            conversa = null;
             System.out.println("User " + login + " disconnected");
             desconectar();
         } catch (IOException ex) {
@@ -154,7 +166,8 @@ public final class Conexao extends Thread {
         for (Conexao c : conexoes) {
             if (c.getSocket().getInetAddress().equals(this.socket.getInetAddress())
                     && c.getLogin().equals(this.getLogin())) {
-                c.atualizaConexao(this.socket);
+                c.reconectar(this.socket);
+                break;
             }
         }
         desconectar();

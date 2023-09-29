@@ -20,7 +20,7 @@ public class Servidor extends Thread {
 
     public void atualizarConexoes() {
         for (Conexao c : conexoes) {
-            c.atualiza(conexoes);
+            c.atualizaConexoes(conexoes);
         }
     }
 
@@ -28,11 +28,6 @@ public class Servidor extends Thread {
     public void run() {
         while (true) {
             try {
-                for (Conexao c : conexoes) {
-                    if (c.getLogin() != null) {
-                        System.out.println(c.getLogin());
-                    }
-                }
                 System.out.println("Aguardando Conexao");
                 Socket socket = servidor.accept();
                 System.out.println("Cliente conectou " + socket);

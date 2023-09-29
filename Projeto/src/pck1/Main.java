@@ -9,16 +9,15 @@ public class Main extends Thread {
         Servidor server = new Servidor();
         server.start();
         while (true) {
-            System.out.println("Usuarios ONLINE: ");
+            System.out.println("Usuarios: ");
             int i = 1;
             for (Conexao c : server.getConexoes()) {
-                if (c.isOnline()) {
+                if (c.getLogin() != null) {
                     System.out.println(i + "--------" + c.getLogin() + "---" + c.getSocket());
-                    i++;
                 }
+                i++;
             }
-            Thread.sleep(3000);
+            Thread.sleep(8000);
         }
     }
 }
-

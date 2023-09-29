@@ -39,7 +39,7 @@ public class BatePapo extends Thread {
         return null;
     }
 
-    public void atualiza(ArrayList<Conexao> conexoes) {
+    public void atualizaConexoes(ArrayList<Conexao> conexoes) {
         this.conexoes = conexoes;
     }
 
@@ -60,9 +60,10 @@ public class BatePapo extends Thread {
                 printUsuarios(fluxoSaida);
                 fluxoSaida.writeUTF("Pressione Enter para ver os Usuarios novamente.");
                 String nome = fluxoEntrada.readUTF();
-                if (nomeValido(nome) != null) {
+                Conexao c = nomeValido(nome);
+                if (c != null) {
                     fluxoSaida.writeUTF("Falando com " + nome);
-                    this.entrada = new Conversa(login, fluxoEntrada, fluxoSaida);
+                    this.entrada = new Conversa(login, c.getLogin(), fluxoEntrada, c.getSaida());
                     this.entrada.start();
                     while (entrada.isAlive()) {
                     }
