@@ -28,7 +28,6 @@ public class EntradaGrupo extends Thread {
         try {
             while (true) {
                 byte[] buf = new byte[1000];
-                System.out.println("Aguardando msg");
                 DatagramPacket messageIn = new DatagramPacket(buf, buf.length);
                 multSocket.receive(messageIn);
                 String msg = new String(messageIn.getData(), 0, messageIn.getLength());

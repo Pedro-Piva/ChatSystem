@@ -29,6 +29,10 @@ public final class Grupo extends Conexao {
         this.membros = new ArrayList();
         DataOutputStream fluxoSaida = new DataOutputStream(getSocket().getOutputStream());
         for (Conexao c : getServer().getConexoes()) {
+            if(c.getSocket() == null){
+                System.out.println("SOCKET NULL");
+                System.out.println(c.getLogin());
+            }
             if (c.getSocket().equals(getSocket()) && c.getLogin().equals(login)) {
                 System.out.println("Adicionei");
                 membros.add(c);
@@ -68,7 +72,6 @@ public final class Grupo extends Conexao {
                 fluxoSaida.writeUTF("Escreva um membro valido ou escreva sair para sair");
             }
         }
-        setSocket(null);
     }
 
     public void printConexoes(DataOutputStream fluxoSaida) throws IOException {
@@ -117,6 +120,5 @@ public final class Grupo extends Conexao {
         byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
         DatagramPacket mensagem = new DatagramPacket(msgBytes, msgBytes.length, group);
         multSocket.send(mensagem);
-        System.out.println("Mensagem do grupo " + getLogin() + " Enviada" + " Mensagem: " + mensagem);
     }
 }
