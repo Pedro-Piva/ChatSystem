@@ -10,7 +10,7 @@ import java.util.ArrayList;
  *
  * @author pedro
  */
-public final class Grupo extends Conexao {
+public final class Grupo extends Conexao{
 
     private ArrayList<Conexao> membros;
 
@@ -45,6 +45,7 @@ public final class Grupo extends Conexao {
                 fluxoSaida.writeUTF("Escreva um membro valido ou escreva sair para sair");
             }
         }
+        setSocket(null);
     }
     
     public Conexao verificaMembro(String membro){
@@ -54,6 +55,10 @@ public final class Grupo extends Conexao {
             }
         }
         return null;
+    }
+    
+    public boolean ehMembro(Conexao c){
+        return membros.contains(c);
     }
     
     public void printUsuariosGrupo(DataOutputStream fluxoSaida) throws IOException{

@@ -12,10 +12,12 @@ public class Main extends Thread {
             System.out.println("Usuarios: ");
             int i = 1;
             for (Conexao c : server.getConexoes()) {
-                if (c.getLogin() != null) {
-                    System.out.println(i + "--------" + c.getLogin() + "--------" + c.getStatus() + "--------" + c.getSocket());
+                if (c instanceof User) {
+                    if (c.getLogin() != null) {
+                        System.out.println(i + "--------" + c.getLogin() + "--------" + c.getStatus() + "--------" + c.getSocket());
+                        i++;
+                    }
                 }
-                i++;
             }
             Thread.sleep(8000);
         }

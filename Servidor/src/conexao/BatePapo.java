@@ -15,7 +15,7 @@ public class BatePapo extends Thread {
     private Conversa entrada;
     private final DataInputStream fluxoEntrada;
     private final String login;
-    private Conexao conexao;
+    private final Conexao conexao;
 
     public BatePapo(DataOutputStream fluxoSaida, DataInputStream fluxoEntrada, String login, Servidor server, Conexao conexao) {
         this.fluxoSaida = fluxoSaida;
@@ -46,6 +46,11 @@ public class BatePapo extends Thread {
             if (c.isOnline() && !c.getLogin().equals(login)) {
                 fluxoSaida.writeUTF(c.getLogin());
             }
+            if(c instanceof Grupo grupo){
+                if(grupo.ehMembro(conexao)){
+                    fluxoSaida.writeUTF(grupo.getLogin());
+                }
+            }
         }
     }
 
@@ -68,7 +73,8 @@ public class BatePapo extends Thread {
                     fluxoSaida.writeUTF("Saiu da Conversa");
                 } else if (nome.equals("grupo")) {
                     Grupo g = new Grupo(conexao.getSocket(), server, this.login);
-                    
+                    g.setLogin("GrupoA");
+                    server.addConexao(g);
                 } else if (nome.equals("desconectar")) {
                     fluxoSaida.writeUTF("desconectado");
                     break;

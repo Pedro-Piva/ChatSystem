@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package conexao;
 
 import java.io.DataInputStream;
@@ -13,7 +9,7 @@ import java.net.Socket;
  *
  * @author pedro
  */
-public class Conexao extends Thread {
+public class Conexao extends Thread{
 
     private final Servidor server;
     private Socket socket;
