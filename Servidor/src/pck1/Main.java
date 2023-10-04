@@ -13,7 +13,7 @@ public class Main extends Thread {
             int i = 1;
             for (Conexao c : server.getConexoes()) {
                 if (c.getLogin() != null) {
-                    System.out.println(i + "--------" + c.getLogin() + "---" + c.getSocket());
+                    System.out.println(i + "--------" + c.getLogin() + "--------" + c.getStatus() + "--------" + c.getSocket());
                 }
                 i++;
             }

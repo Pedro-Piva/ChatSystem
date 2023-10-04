@@ -3,7 +3,6 @@ package conexao;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  *
@@ -11,17 +10,19 @@ import java.util.ArrayList;
  */
 public class BatePapo extends Thread {
 
-    private Servidor server;
+    private final Servidor server;
     private final DataOutputStream fluxoSaida;
     private Conversa entrada;
     private final DataInputStream fluxoEntrada;
     private final String login;
+    private Conexao conexao;
 
-    public BatePapo(DataOutputStream fluxoSaida, DataInputStream fluxoEntrada, String login, Servidor server) {
+    public BatePapo(DataOutputStream fluxoSaida, DataInputStream fluxoEntrada, String login, Servidor server, Conexao conexao) {
         this.fluxoSaida = fluxoSaida;
         this.fluxoEntrada = fluxoEntrada;
         this.login = login;
         this.server = server;
+        this.conexao = conexao;
     }
 
     public Conversa getEntrada() {
@@ -59,13 +60,17 @@ public class BatePapo extends Thread {
                 Conexao c = nomeValido(nome);
                 if (c != null) {
                     fluxoSaida.writeUTF("Falando com " + nome);
-                    this.entrada = new Conversa(login, c.getLogin(), fluxoEntrada, c.getSaida());
+                    this.entrada = new Conversa(login, c.getLogin(), fluxoEntrada, new DataOutputStream(c.getSocket().getOutputStream()));
                     this.entrada.start();
                     while (entrada.isAlive()) {
                     }
                     System.out.println(login + " Saiu da Conversa");
                     fluxoSaida.writeUTF("Saiu da Conversa");
+                } else if (nome.equals("grupo")) {
+                    Grupo g = new Grupo(conexao.getSocket(), server, this.login);
+                    
                 } else if (nome.equals("desconectar")) {
+                    fluxoSaida.writeUTF("desconectado");
                     break;
                 } else if (nome.equals("")) {
                     System.out.println("Oi");

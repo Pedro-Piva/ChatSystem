@@ -33,9 +33,9 @@ public class Servidor extends Thread {
                 System.out.println("Aguardando Conexao");
                 Socket socket = servidor.accept();
                 System.out.println("Cliente conectou " + socket);
-                Conexao conexao = new Conexao(socket, this);
-                conexoes.add(conexao);
-                conexao.start();
+                User u = new User(socket, this);
+                conexoes.add(u);
+                u.start();
             } catch (IOException ex) {
                 System.out.println("Erro no Servidor " + ex);
             }

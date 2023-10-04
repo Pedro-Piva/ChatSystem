@@ -1,157 +1,101 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package conexao;
 
-import java.net.*;
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 
+/**
+ *
+ * @author pedro
+ */
 public class Conexao extends Thread {
 
     private final Servidor server;
     private Socket socket;
-    private DataOutputStream saida;
     private String login;
     private boolean online;
-    private BatePapo conversa;
+    private BatePapo b;
+    private String tipo;
 
-    public Conexao(Socket socket, Servidor server) throws IOException {
+    public Conexao(Socket socket, Servidor server) {
         this.server = server;
         this.socket = socket;
+        this.login = null;
         this.online = false;
     }
 
-    public String getLogin() {
-        return login;
+    public BatePapo getB() {
+        return b;
+    }
+
+    public void setB(BatePapo b) {
+        this.b = b;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
     }
 
     public Socket getSocket() {
         return socket;
     }
 
-    public DataOutputStream getSaida() {
-        return saida;
+    public void setSocket(Socket socket) {
+        this.socket = socket;
     }
 
-    public Conversa getEntrada() {
-        return conversa.getEntrada();
+    public Servidor getServer() {
+        return server;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
     }
 
     public boolean isOnline() {
         return online;
     }
 
-    public boolean repetido(String nome) {
-        for (Conexao c : server.getConexoes()) {
-            if (c.getLogin() != null) {
-                if (c.getLogin().equals(nome)) {
-                    return false;
-                }
-            }
-        }
-        return true;
+    public String getTipo() {
+        return tipo;
     }
 
-    public void printUsuarios(DataOutputStream fluxoSaida) throws IOException {
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getStatus(){
+        if(online){
+            return "Online";
+        } 
+        return "Offline";
+    }
+    public void reconectar(Socket socket) throws IOException {
+        setSocket(socket);
+        setOnline(true);
+        setB(new BatePapo(new DataOutputStream(socket.getOutputStream()), new DataInputStream(socket.getInputStream()), getLogin(), getServer(), this));
+        getB().start();
+        while (getB().isAlive()) {
+        }
+        setOnline(false);
+    }
+
+    public void printUsuarios() throws IOException {
+        DataOutputStream fluxoSaida = new DataOutputStream(socket.getOutputStream());
         fluxoSaida.writeUTF("Usuarios do Servidor: ");
-        for (Conexao c : server.getConexoes()) {
+        for (Conexao c : getServer().getConexoes()) {
             if (c.getLogin() != null) {
                 fluxoSaida.writeUTF(c.getLogin());
             }
         }
-    }
-
-    public boolean verificaConexaoIgual(String nome) {
-        for (Conexao c : server.getConexoes()) {
-            if (!c.isOnline()) {
-                if (c.getSocket().getInetAddress().equals(socket.getInetAddress())
-                        && c.getLogin() != null) {
-                    if (c.getLogin().equals(nome)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public void run() {
-        DataInputStream fluxoEntrada;
-        DataOutputStream fluxoSaida;
-        try {
-            if (!online) {
-                fluxoEntrada = new DataInputStream(socket.getInputStream());
-                fluxoSaida = new DataOutputStream(socket.getOutputStream());
-                boolean repetido = false;
-                while (true) {
-                    fluxoSaida.writeUTF("Informe o Login: ");
-                    //Recebe da tela de login o login
-                    String lixo = fluxoEntrada.readUTF();
-                    System.out.println("Login Recebido: " + lixo);
-                    if (repetido(lixo) && !lixo.equals("")) {
-                        System.out.println(lixo + " Logou");
-                        //Mensagem de sucesso
-                        fluxoSaida.writeUTF(lixo + " Logou");
-                        System.out.println("Grupo teste criado");
-                        Grupo g = new Grupo(socket, server);
-                        this.login = lixo;
-                        this.online = true;
-                        break;
-                    } else if (verificaConexaoIgual(lixo)) {
-                        this.login = lixo;
-                        System.out.println(lixo + " Logou Novamente");
-                        //Mensagem de sucesso de alguém relogando
-                        fluxoSaida.writeUTF(lixo + " Logou Novamente");
-                        apagar();
-                        repetido = true;
-                        break;
-                    } else {
-                        System.out.println("Login Invalido ou ja existente, tente novamente: " + lixo);
-                        //Mensagem de erro
-                        fluxoSaida.writeUTF("Login Invalido ou ja existente, tente novamente");
-                        printUsuarios(fluxoSaida);
-                    }
-                }
-                if (!repetido) {
-                    this.saida = fluxoSaida;
-                    this.conversa = new BatePapo(fluxoSaida, fluxoEntrada, this.login, server);
-                    this.conversa.start();
-                }
-            }
-            if (conversa != null) {
-                while (conversa.isAlive()) {
-                }
-            }
-            online = false;
-            System.out.println("User " + login + " disconnected");
-        } catch (IOException ex) {
-            System.out.println("IO " + ex);
-            this.online = false;
-        }
-    }
-
-    public void apagar() throws IOException {
-        for (Conexao c : server.getConexoes()) {
-            if (c.equals(this)) {
-                server.removeConexao(c);
-                break;
-            }
-        }
-        for (Conexao c : server.getConexoes()) {
-            if (c.getSocket().getInetAddress().equals(this.socket.getInetAddress())
-                    && c.getLogin().equals(this.getLogin())) {
-                c.reconectar(this.socket);
-                break;
-            }
-        }
-    }
-
-    public void reconectar(Socket socket) throws IOException {
-        this.socket = socket;
-        this.saida = new DataOutputStream(socket.getOutputStream());
-        this.online = true;
-        this.conversa = new BatePapo(saida, new DataInputStream(socket.getInputStream()), this.login, this.server);
-        this.conversa.start();
-        while (conversa.isAlive()) {
-        }
-        this.online = false;
     }
 }
