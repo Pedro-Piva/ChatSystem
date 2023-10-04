@@ -12,6 +12,7 @@ public class Entrada extends Thread {
         this.fluxoEntrada = new DataInputStream(socket.getInputStream());
     }
 
+    //recebe a mensagem do Servidor e Exibe no Front
     @Override
     public void run() {
         while (true) {
@@ -20,10 +21,14 @@ public class Entrada extends Thread {
                 if (msg.equals("Informe o Login: ")) {
                     System.out.print(msg);
                 } else {
+                    if(msg.equals("desconectado")){
+                        break;
+                    }
                     System.out.println("Mensagem> " + msg);
                 }
             } catch (IOException ex) {
-                System.out.println("Erro no Servidor: " + ex.getMessage());
+                //System.out.println("Erro no Servidor: " + ex);
+                System.out.println("DESCONECTADO");
                 System.out.println("Pressione Enter para sair");
                 break;
             }
