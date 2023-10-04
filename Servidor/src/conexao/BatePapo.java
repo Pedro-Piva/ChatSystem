@@ -12,7 +12,6 @@ public class BatePapo extends Thread {
 
     private final Servidor server;
     private final DataOutputStream fluxoSaida;
-    private Conversa entrada;
     private final DataInputStream fluxoEntrada;
     private final String login;
     private final Conexao conexao;
@@ -23,10 +22,6 @@ public class BatePapo extends Thread {
         this.login = login;
         this.server = server;
         this.conexao = conexao;
-    }
-
-    public Conversa getEntrada() {
-        return entrada;
     }
 
     public Conexao nomeValido(String nome) {
@@ -46,8 +41,11 @@ public class BatePapo extends Thread {
             if (c.isOnline() && !c.getLogin().equals(login)) {
                 fluxoSaida.writeUTF(c.getLogin());
             }
-            if(c instanceof Grupo grupo){
-                if(grupo.ehMembro(conexao)){
+        }
+        fluxoSaida.writeUTF("Grupos disponiveis: ");
+        for (Conexao c : server.getConexoes()) {
+            if (c instanceof Grupo grupo) {
+                if (grupo.ehMembro(conexao)) {
                     fluxoSaida.writeUTF(grupo.getLogin());
                 }
             }
@@ -64,16 +62,25 @@ public class BatePapo extends Thread {
                 String nome = fluxoEntrada.readUTF();
                 Conexao c = nomeValido(nome);
                 if (c != null) {
-                    fluxoSaida.writeUTF("Falando com " + nome);
-                    this.entrada = new Conversa(login, c.getLogin(), fluxoEntrada, new DataOutputStream(c.getSocket().getOutputStream()));
-                    this.entrada.start();
-                    while (entrada.isAlive()) {
+                    if (c instanceof User) {
+                        fluxoSaida.writeUTF("Falando com " + nome);
+                        Conversa cvs = new Conversa(login, c.getLogin(), fluxoEntrada, new DataOutputStream(c.getSocket().getOutputStream()));
+                        cvs.start();
+                        while (cvs.isAlive()) {
+                        }
+                        System.out.println(login + " Saiu da Conversa");
+                        fluxoSaida.writeUTF("Saiu da Conversa");
+                    } else if (c instanceof Grupo grupo) {
+                        fluxoSaida.writeUTF("Falando no Grupo " + nome);
+                        ConversaGrupo cg = new ConversaGrupo(grupo, conexao.getSocket(), this.login);
+                        cg.start();
+                        while (cg.isAlive()) {
+                        }
+                        System.out.println(login + " Saiu da Conversa");
+                        fluxoSaida.writeUTF("Saiu da Conversa");
                     }
-                    System.out.println(login + " Saiu da Conversa");
-                    fluxoSaida.writeUTF("Saiu da Conversa");
                 } else if (nome.equals("grupo")) {
-                    Grupo g = new Grupo(conexao.getSocket(), server, this.login);
-                    g.setLogin("GrupoA");
+                    Grupo g = new Grupo(conexao.getSocket(), server, this.login, server.getPort());
                     server.addConexao(g);
                 } else if (nome.equals("desconectar")) {
                     fluxoSaida.writeUTF("desconectado");
