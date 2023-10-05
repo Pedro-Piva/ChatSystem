@@ -7,7 +7,6 @@ package conexao;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
 
 /**
  *
@@ -40,6 +39,7 @@ public class ConversaGrupo extends Thread {
                     }
                     case "sair do grupo" -> {
                         msg = grupo.getLogin() + "> " + login + " Saiu do Grupo";
+                        System.out.println(msg + "SAIR DO GRUPO");
                         grupo.enviarMSG(msg);
                         grupo.removeMembro(conexao);
                         break OUTER;

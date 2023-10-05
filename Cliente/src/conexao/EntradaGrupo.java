@@ -36,7 +36,6 @@ public class EntradaGrupo extends Thread {
                 String msg = new String(messageIn.getData(), 0, messageIn.getLength());
                 System.out.println("Mensagem> " + msg);
                 if(msg.equals(nomeGrupo + "> " + login + " Saiu do Grupo")){
-                    System.out.println("Entrada Grupo excluida");
                     break;
                 }
             }

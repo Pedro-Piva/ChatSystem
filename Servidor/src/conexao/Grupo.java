@@ -31,11 +31,6 @@ public final class Grupo extends Conexao {
         this.port = port;
         DataOutputStream fluxoSaida = new DataOutputStream(getSocket().getOutputStream());
         DataInputStream fluxoEntrada = new DataInputStream(getSocket().getInputStream());
-        for (Conexao c : getServer().getConexoes()) {
-            if (c.getSocket().equals(getSocket()) && c.getLogin().equals(login)) {
-                membros.add(c);
-            }
-        }
         while (true) {
             fluxoSaida.writeUTF("Informe um nome valido para o Grupo: ");
             String nome = fluxoEntrada.readUTF();
@@ -47,16 +42,24 @@ public final class Grupo extends Conexao {
 
             }
         }
+        for (Conexao c : getServer().getConexoes()) {
+            if (c.getSocket().equals(getSocket()) && c.getLogin().equals(login)) {
+                DataOutputStream criarEntradas = new DataOutputStream(c.getSocket().getOutputStream());
+                criarEntradas.writeUTF("address " + port + " " + c.getLogin() + " " + getLogin());
+                membros.add(c);
+                break;
+            }
+        }
         addMembros(fluxoSaida, fluxoEntrada);
         fluxoSaida.writeUTF("Grupo Criado\n\tMembros:");
-        for(Conexao c: membros){
+        for (Conexao c : membros) {
             fluxoSaida.writeUTF(c.getLogin());
         }
     }
 
     public void removeMembro(Conexao conexao) {
         membros.remove(conexao);
-        if(membros.isEmpty()){
+        if (membros.isEmpty()) {
             getServer().removeConexao(this);
             System.out.println("Grupo removido");
         }

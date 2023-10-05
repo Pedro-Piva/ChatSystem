@@ -52,6 +52,17 @@ public class BatePapo extends Thread {
         }
     }
 
+    public boolean estaEmGrupo() {
+        for (Conexao c : conexao.getServer().getConexoes()) {
+            if (c instanceof Grupo g) {
+                if (g.ehMembro(conexao)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public void run() {
         while (true) {
@@ -86,8 +97,12 @@ public class BatePapo extends Thread {
                     Grupo g = new Grupo(conexao.getSocket(), server, this.login, server.getPort());
                     server.addConexao(g);
                 } else if (nome.equals("desconectar")) {
-                    fluxoSaida.writeUTF("desconectado");
-                    break;
+                    if (estaEmGrupo()) {
+                        fluxoSaida.writeUTF("Saia dos Grupos antes de desconectar");
+                    } else {
+                        fluxoSaida.writeUTF("desconectado");
+                        break;
+                    }
                 } else if (nome.equals("")) {
                     System.out.println("Oi");
                 } else {

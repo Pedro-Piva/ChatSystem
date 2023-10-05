@@ -19,7 +19,17 @@ public class Main extends Thread {
                     }
                 }
             }
-            Thread.sleep(8000);
+            System.out.println("Grupos: ");
+            i = 1;
+            for (Conexao c : server.getConexoes()) {
+                if (c instanceof Grupo) {
+                    if (c.getLogin() != null) {
+                        System.out.println(i + "--------" + c.getLogin());
+                        i++;
+                    }
+                }
+            }
+            Thread.sleep(5000);
         }
     }
 }
