@@ -32,14 +32,13 @@ public final class Grupo extends Conexao {
         DataOutputStream fluxoSaida = new DataOutputStream(getSocket().getOutputStream());
         DataInputStream fluxoEntrada = new DataInputStream(getSocket().getInputStream());
         while (true) {
-            fluxoSaida.writeUTF("Informe um nome valido para o Grupo: ");
+            fluxoSaida.writeUTF("SERVIDOR> Informe um nome valido para o Grupo:");
             String nome = fluxoEntrada.readUTF();
             if (nomeDiferente(nome)) {
                 setLogin(nome);
                 break;
             } else {
-                fluxoSaida.writeUTF("Nome invalido ou ja existente: ");
-
+                fluxoSaida.writeUTF("SERVIDOR> Nome invalido ou ja existente");
             }
         }
         for (Conexao c : getServer().getConexoes()) {
@@ -51,9 +50,9 @@ public final class Grupo extends Conexao {
             }
         }
         addMembros(fluxoSaida, fluxoEntrada);
-        fluxoSaida.writeUTF("Grupo Criado\n\tMembros:");
+        fluxoSaida.writeUTF("SERVIDOR> Grupo Criado\n\tMembros: ");
         for (Conexao c : membros) {
-            fluxoSaida.writeUTF(c.getLogin());
+            fluxoSaida.writeUTF("\t\t" + c.getLogin());
         }
     }
 
@@ -61,12 +60,12 @@ public final class Grupo extends Conexao {
         membros.remove(conexao);
         if (membros.isEmpty()) {
             getServer().removeConexao(this);
-            System.out.println("Grupo removido");
+            System.out.println("SERVIDOR> Grupo removido");
         }
     }
 
     public void printConexoes(DataOutputStream fluxoSaida) throws IOException {
-        fluxoSaida.writeUTF("Nomes indisponiveis: ");
+        fluxoSaida.writeUTF("SERVIDOR> Nomes indisponiveis: ");
         for (Conexao c : getServer().getConexoes()) {
             if (c.getLogin() != null) {
                 fluxoSaida.writeUTF(c.getLogin());
@@ -86,21 +85,21 @@ public final class Grupo extends Conexao {
     public void addMembros(DataOutputStream fluxoSaida, DataInputStream fluxoEntrada) throws IOException {
         while (true) {
             printUsuariosGrupo(fluxoSaida);
-            fluxoSaida.writeUTF("Selecione um membro para fazer parte do grupo");
+            fluxoSaida.writeUTF("SERVIDOR> Selecione um membro para fazer parte do grupo:");
             String membro = fluxoEntrada.readUTF();
             if (membro.equals("sair")) {
-                fluxoSaida.writeUTF("Membros adicionados!");
+                fluxoSaida.writeUTF("SERVIDOR> Membros adicionados!");
                 break;
             }
             Conexao c = verificaMembro(membro);
             if (c != null) {
                 membros.add(c);
-                fluxoSaida.writeUTF(c.getLogin() + " Adicionado com sucesso");
-                fluxoSaida.writeUTF("Escreva outro membro ou escreva sair para sair");
+                fluxoSaida.writeUTF("SERVIDOR> " + c.getLogin() + " Adicionado com sucesso");
+                fluxoSaida.writeUTF("SERVIDOR> Escreva outro membro ou escreva sair para sair");
                 DataOutputStream criarEntradas = new DataOutputStream(c.getSocket().getOutputStream());
                 criarEntradas.writeUTF("address " + port + " " + c.getLogin() + " " + getLogin());
             } else {
-                fluxoSaida.writeUTF("Escreva um membro valido ou escreva sair para sair");
+                fluxoSaida.writeUTF("SERVIDOR> Escreva um membro valido ou escreva sair para sair");
             }
         }
     }
@@ -121,10 +120,10 @@ public final class Grupo extends Conexao {
     }
 
     public void printUsuariosGrupo(DataOutputStream fluxoSaida) throws IOException {
-        fluxoSaida.writeUTF("Usuarios:");
+        fluxoSaida.writeUTF("Usuarios: ");
         for (Conexao c : getServer().getConexoes()) {
             if (!membros.contains(c) && c instanceof User) {
-                fluxoSaida.writeUTF(c.getLogin());
+                fluxoSaida.writeUTF("\t" + c.getLogin());
             }
         }
     }

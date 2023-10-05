@@ -18,8 +18,8 @@ public class Entrada extends Thread {
         while (true) {
             try {
                 String msg = fluxoEntrada.readUTF();
-                if (msg.equals("Informe o Login: ")) {
-                    System.out.print(msg);
+                if (msg.charAt(msg.length() - 1) == ':') {
+                    System.out.print(msg + " ");
                 } else if (msg.split(" ")[0].equals("address")) {
                     EntradaGrupo entradaGrupo = new EntradaGrupo(Integer.parseInt(msg.split(" ")[1]), msg.split(" ")[2], msg.split(" ")[3]);
                     entradaGrupo.start();
@@ -27,7 +27,7 @@ public class Entrada extends Thread {
                     if (msg.equals("desconectado")) {
                         break;
                     }
-                    System.out.println("Mensagem> " + msg);
+                    System.out.println(msg);
                 }
 
             } catch (IOException ex) {

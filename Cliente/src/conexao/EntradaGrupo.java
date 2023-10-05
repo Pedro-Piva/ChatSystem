@@ -34,7 +34,7 @@ public class EntradaGrupo extends Thread {
                 DatagramPacket messageIn = new DatagramPacket(buf, buf.length);
                 multSocket.receive(messageIn);
                 String msg = new String(messageIn.getData(), 0, messageIn.getLength());
-                System.out.println("Mensagem> " + msg);
+                System.out.println(msg);
                 if(msg.equals(nomeGrupo + "> " + login + " Saiu do Grupo")){
                     break;
                 }

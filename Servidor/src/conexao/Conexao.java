@@ -107,7 +107,7 @@ public class Conexao extends Thread {
         fluxoSaida.writeUTF("Usuarios do Servidor: ");
         for (Conexao c : getServer().getConexoes()) {
             if (c.getLogin() != null) {
-                fluxoSaida.writeUTF(c.getLogin());
+                fluxoSaida.writeUTF("\t" + c.getLogin());
             }
         }
     }

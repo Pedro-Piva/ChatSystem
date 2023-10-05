@@ -50,14 +50,14 @@ public class User extends Conexao implements Runnable {
                 fluxoSaida = new DataOutputStream(getSocket().getOutputStream());
                 boolean repetido = false;
                 while (true) {
-                    fluxoSaida.writeUTF("Informe o Login: ");
+                    fluxoSaida.writeUTF("SERVIDOR> Informe o Login:");
                     //Recebe da tela de login o login
                     String lixo = fluxoEntrada.readUTF();
                     System.out.println("Login Recebido: " + lixo);
                     if (repetido(lixo) && !lixo.equals("")) {
                         System.out.println(lixo + " Logou");
                         //Mensagem de sucesso
-                        fluxoSaida.writeUTF(lixo + " Logou");
+                        fluxoSaida.writeUTF("SERVIDOR> " + lixo + " Logou");
                         setLogin(lixo);
                         setOnline(true);
                         break;
@@ -65,14 +65,14 @@ public class User extends Conexao implements Runnable {
                         setLogin(lixo);
                         System.out.println(lixo + " Logou Novamente");
                         //Mensagem de sucesso de alguém relogando
-                        fluxoSaida.writeUTF(lixo + " Logou Novamente");
+                        fluxoSaida.writeUTF("SERVIDOR> " + lixo + " Logou Novamente");
                         apagar();
                         repetido = true;
                         break;
                     } else {
                         System.out.println("Login Invalido ou ja existente, tente novamente: " + lixo);
                         //Mensagem de erro
-                        fluxoSaida.writeUTF("Login Invalido ou ja existente, tente novamente");
+                        fluxoSaida.writeUTF("SERVIDOR> " + "Login Invalido ou ja existente, tente novamente");
                         printUsuarios();
                     }
                 }

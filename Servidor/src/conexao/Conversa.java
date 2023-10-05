@@ -15,13 +15,15 @@ public class Conversa extends Thread {
     private final DataInputStream fluxoEntrada;
     private final DataOutputStream fluxoSaida;
     private final Conexao cDestino;
+    private final Conexao cOrigem;
 
-    public Conversa(String login, String destino, DataInputStream fluxoEntrada, DataOutputStream fluxoSaida, Conexao conexao) throws IOException {
+    public Conversa(String login, String destino, DataInputStream fluxoEntrada, Conexao conexao, Conexao origem) throws IOException {
         this.login = login;
         this.destino = destino;
         this.fluxoEntrada = fluxoEntrada;
-        this.fluxoSaida = fluxoSaida;
+        this.fluxoSaida = new DataOutputStream(conexao.getSocket().getOutputStream());
         this.cDestino = conexao;
+        this.cOrigem = origem;
     }
 
     public void enviar(String msg, String login) throws IOException {
@@ -32,6 +34,8 @@ public class Conversa extends Thread {
     public void run() {
         while (true) {
             try {
+                DataOutputStream remetente = new DataOutputStream(cOrigem.getSocket().getOutputStream());
+                remetente.writeUTF(this.login + "- Mensagem:");
                 String msg = fluxoEntrada.readUTF();
                 System.out.println(this.login + "-" + this.destino + "> " + msg);
                 if (msg.equals("sair")) {
@@ -42,7 +46,7 @@ public class Conversa extends Thread {
                 } catch (IOException ex) {
                     msg = login + "> " + msg;
                     cDestino.armazenarMensagem(msg);
-                    System.out.println("MENSAGEM NÃO ENVIADA, SERA ENVIADA NA PROXIMA VEZ EM QUE O USER FICAR ONLINE");
+                    System.out.println("MENSAGEM NAO ENVIADA, SERA ENVIADA NA PROXIMA VEZ EM QUE O USER FICAR ONLINE");
                     break;
                 }
             } catch (IOException ex) {

@@ -18,12 +18,14 @@ public class ConversaGrupo extends Thread {
     private final DataInputStream fluxoEntrada;
     private final String login;
     private final Conexao conexao;
+    private final DataOutputStream fluxoSaida;
 
     public ConversaGrupo(Grupo grupo, Conexao conexao, String login) throws IOException {
         this.grupo = grupo;
         this.fluxoEntrada = new DataInputStream(conexao.getSocket().getInputStream());
         this.conexao = conexao;
         this.login = login;
+        this.fluxoSaida = new DataOutputStream(conexao.getSocket().getOutputStream());
     }
 
     @Override
@@ -31,6 +33,7 @@ public class ConversaGrupo extends Thread {
         OUTER:
         while (true) {
             try {
+                fluxoSaida.writeUTF(this.login + " Mensagem:");
                 String msg = fluxoEntrada.readUTF();
                 System.out.println(this.login + "-" + grupo.getLogin() + "> " + msg);
                 switch (msg) {
@@ -45,7 +48,7 @@ public class ConversaGrupo extends Thread {
                         break OUTER;
                     }
                     case "add" -> {
-                        grupo.addMembros(new DataOutputStream(conexao.getSocket().getOutputStream()), fluxoEntrada);
+                        grupo.addMembros(fluxoSaida, fluxoEntrada);
                         continue;
                     }
                     default -> {
