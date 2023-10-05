@@ -12,10 +12,5 @@ public class Main {
         InetAddress ip = InetAddress.getByName("localhost");
         Socket socket = new Socket(ip, porta);
         Conexao conexao = new Conexao(socket);
-        while(true){
-            if(conexao.getSocket().isClosed()){
-                
-            }
-        }
     }
 }

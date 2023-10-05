@@ -4,12 +4,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  *
  * @author pedro
  */
-public class Conexao extends Thread{
+public class Conexao extends Thread {
 
     private final Servidor server;
     private Socket socket;
@@ -17,12 +18,16 @@ public class Conexao extends Thread{
     private boolean online;
     private BatePapo b;
     private String tipo;
+    private ArrayList<String> mensagens;
 
     public Conexao(Socket socket, Servidor server) {
         this.server = server;
         this.socket = socket;
         this.login = null;
         this.online = false;
+        if (this instanceof User) {
+            this.mensagens = new ArrayList();
+        }
     }
 
     public BatePapo getB() {
@@ -69,20 +74,32 @@ public class Conexao extends Thread{
         this.tipo = tipo;
     }
 
-    public String getStatus(){
-        if(online){
+    public String getStatus() {
+        if (online) {
             return "Online";
-        } 
+        }
         return "Offline";
     }
+
     public void reconectar(Socket socket) throws IOException {
         setSocket(socket);
         setOnline(true);
         setB(new BatePapo(new DataOutputStream(socket.getOutputStream()), new DataInputStream(socket.getInputStream()), getLogin(), getServer(), this));
+        mandarMensagens();
         getB().start();
         while (getB().isAlive()) {
         }
         setOnline(false);
+    }
+    public void mandarMensagens() throws IOException{
+        DataOutputStream fluxoSaida = new DataOutputStream(this.socket.getOutputStream());
+        for(String s: mensagens){
+            fluxoSaida.writeUTF(s);
+        }
+        this.mensagens.clear();
+    }
+    public void armazenarMensagem(String msg) {
+        this.mensagens.add(msg);
     }
 
     public void printUsuarios() throws IOException {

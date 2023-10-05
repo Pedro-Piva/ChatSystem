@@ -14,12 +14,14 @@ public class Conversa extends Thread {
     private final String destino;
     private final DataInputStream fluxoEntrada;
     private final DataOutputStream fluxoSaida;
+    private final Conexao cDestino;
 
-    public Conversa(String login, String destino, DataInputStream fluxoEntrada, DataOutputStream fluxoSaida) throws IOException {
+    public Conversa(String login, String destino, DataInputStream fluxoEntrada, DataOutputStream fluxoSaida, Conexao conexao) throws IOException {
         this.login = login;
         this.destino = destino;
         this.fluxoEntrada = fluxoEntrada;
         this.fluxoSaida = fluxoSaida;
+        this.cDestino = conexao;
     }
 
     public void enviar(String msg, String login) throws IOException {
@@ -35,7 +37,14 @@ public class Conversa extends Thread {
                 if (msg.equals("sair")) {
                     break;
                 }
-                enviar(msg, login);
+                try {
+                    enviar(msg, login);
+                } catch (IOException ex) {
+                    msg = login + "> " + msg;
+                    cDestino.armazenarMensagem(msg);
+                    System.out.println("MENSAGEM NÃO ENVIADA, SERA ENVIADA NA PROXIMA VEZ EM QUE O USER FICAR ONLINE");
+                    break;
+                }
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
                 break;

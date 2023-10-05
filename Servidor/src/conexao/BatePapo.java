@@ -75,7 +75,7 @@ public class BatePapo extends Thread {
                 if (c != null) {
                     if (c instanceof User) {
                         fluxoSaida.writeUTF("Falando com " + nome);
-                        Conversa cvs = new Conversa(login, c.getLogin(), fluxoEntrada, new DataOutputStream(c.getSocket().getOutputStream()));
+                        Conversa cvs = new Conversa(login, c.getLogin(), fluxoEntrada, new DataOutputStream(c.getSocket().getOutputStream()), c);
                         cvs.start();
                         while (cvs.isAlive()) {
                         }

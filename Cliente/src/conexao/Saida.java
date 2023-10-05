@@ -27,8 +27,9 @@ public class Saida extends Thread {
                 String msg = sc.nextLine();
                 fluxoSaida.writeUTF(msg);
                 if (msg.equals("desconectar")) {
+                    Thread.sleep(100);
                     if (!entrada.isAlive()) {
-                        Thread.sleep(500);
+                        System.out.println("DESCONECTOU");
                         break;
                     }
                 }
