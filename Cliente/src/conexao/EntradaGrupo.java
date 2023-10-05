@@ -13,14 +13,17 @@ public class EntradaGrupo extends Thread {
     private final InetSocketAddress group;
     private final NetworkInterface netIf;
     private final MulticastSocket multSocket;
+    private final String login;
+    private final String nomeGrupo;
 
-    public EntradaGrupo(int port) throws UnknownHostException, SocketException, IOException {
+    public EntradaGrupo(int port, String login, String nomeGrupo) throws UnknownHostException, SocketException, IOException {
+        this.login = login;
+        this.nomeGrupo = nomeGrupo;
         this.mcastaddr = InetAddress.getByName("228.5.6.7");
         this.group = new InetSocketAddress(mcastaddr, port);
         this.netIf = NetworkInterface.getByName("wlp0s20f3");
         this.multSocket = new MulticastSocket(port);
         multSocket.joinGroup(group, netIf);
-        System.out.println("ENTRADAGRUPO CRIADA");
     }
 
     @Override
@@ -32,6 +35,10 @@ public class EntradaGrupo extends Thread {
                 multSocket.receive(messageIn);
                 String msg = new String(messageIn.getData(), 0, messageIn.getLength());
                 System.out.println("Mensagem> " + msg);
+                if(msg.equals(nomeGrupo + "> " + login + " Saiu do Grupo")){
+                    System.out.println("Entrada Grupo excluida");
+                    break;
+                }
             }
         } catch (IOException ex) {
             System.out.println("IOException " + ex.getMessage());

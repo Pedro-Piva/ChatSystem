@@ -32,7 +32,7 @@ public class Conversa extends Thread {
             try {
                 String msg = fluxoEntrada.readUTF();
                 System.out.println(this.login + "-" + this.destino + "> " + msg);
-                if (msg.equals("Desconectar")) {
+                if (msg.equals("sair")) {
                     break;
                 }
                 enviar(msg, login);

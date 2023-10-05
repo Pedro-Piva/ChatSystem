@@ -18,6 +18,7 @@ public final class Grupo extends Conexao {
     private InetSocketAddress group;
     private NetworkInterface netIf;
     private MulticastSocket multSocket;
+    private int port;
 
     public Grupo(Socket socket, Servidor server, String login, int port) throws IOException {
         super(socket, server);
@@ -27,18 +28,14 @@ public final class Grupo extends Conexao {
         this.multSocket = new MulticastSocket(port);
         multSocket.joinGroup(group, netIf);
         this.membros = new ArrayList();
+        this.port = port;
         DataOutputStream fluxoSaida = new DataOutputStream(getSocket().getOutputStream());
+        DataInputStream fluxoEntrada = new DataInputStream(getSocket().getInputStream());
         for (Conexao c : getServer().getConexoes()) {
-            if(c.getSocket() == null){
-                System.out.println("SOCKET NULL");
-                System.out.println(c.getLogin());
-            }
             if (c.getSocket().equals(getSocket()) && c.getLogin().equals(login)) {
-                System.out.println("Adicionei");
                 membros.add(c);
             }
         }
-        DataInputStream fluxoEntrada = new DataInputStream(getSocket().getInputStream());
         while (true) {
             fluxoSaida.writeUTF("Informe um nome valido para o Grupo: ");
             String nome = fluxoEntrada.readUTF();
@@ -50,27 +47,18 @@ public final class Grupo extends Conexao {
 
             }
         }
-        while (true) {
-            printUsuariosGrupo(fluxoSaida);
-            fluxoSaida.writeUTF("Selecione um membro para fazer parte do grupo");
-            String membro = fluxoEntrada.readUTF();
-            if (membro.equals("sair")) {
-                fluxoSaida.writeUTF("Grupo Criado\n\tMembros:");
-                for (Conexao c : membros) {
-                    fluxoSaida.writeUTF(c.getLogin());
-                    DataOutputStream criarEntradas = new DataOutputStream(c.getSocket().getOutputStream());
-                    criarEntradas.writeUTF("address " + port);
-                }        
-                break;
-            }
-            Conexao c = verificaMembro(membro);
-            if (c != null) {
-                membros.add(c);
-                fluxoSaida.writeUTF(c.getLogin() + " Adicionado com sucesso");
-                fluxoSaida.writeUTF("Escreva outro membro ou escreva sair para sair");
-            } else {
-                fluxoSaida.writeUTF("Escreva um membro valido ou escreva sair para sair");
-            }
+        addMembros(fluxoSaida, fluxoEntrada);
+        fluxoSaida.writeUTF("Grupo Criado\n\tMembros:");
+        for(Conexao c: membros){
+            fluxoSaida.writeUTF(c.getLogin());
+        }
+    }
+
+    public void removeMembro(Conexao conexao) {
+        membros.remove(conexao);
+        if(membros.isEmpty()){
+            getServer().removeConexao(this);
+            System.out.println("Grupo removido");
         }
     }
 
@@ -92,6 +80,28 @@ public final class Grupo extends Conexao {
         return null;
     }
 
+    public void addMembros(DataOutputStream fluxoSaida, DataInputStream fluxoEntrada) throws IOException {
+        while (true) {
+            printUsuariosGrupo(fluxoSaida);
+            fluxoSaida.writeUTF("Selecione um membro para fazer parte do grupo");
+            String membro = fluxoEntrada.readUTF();
+            if (membro.equals("sair")) {
+                fluxoSaida.writeUTF("Membros adicionados!");
+                break;
+            }
+            Conexao c = verificaMembro(membro);
+            if (c != null) {
+                membros.add(c);
+                fluxoSaida.writeUTF(c.getLogin() + " Adicionado com sucesso");
+                fluxoSaida.writeUTF("Escreva outro membro ou escreva sair para sair");
+                DataOutputStream criarEntradas = new DataOutputStream(c.getSocket().getOutputStream());
+                criarEntradas.writeUTF("address " + port + " " + c.getLogin() + " " + getLogin());
+            } else {
+                fluxoSaida.writeUTF("Escreva um membro valido ou escreva sair para sair");
+            }
+        }
+    }
+
     public boolean nomeDiferente(String nome) {
         for (Conexao c : getServer().getConexoes()) {
             if (c.getLogin() != null) {
@@ -110,7 +120,7 @@ public final class Grupo extends Conexao {
     public void printUsuariosGrupo(DataOutputStream fluxoSaida) throws IOException {
         fluxoSaida.writeUTF("Usuarios:");
         for (Conexao c : getServer().getConexoes()) {
-            if (!membros.contains(c)) {
+            if (!membros.contains(c) && c instanceof User) {
                 fluxoSaida.writeUTF(c.getLogin());
             }
         }

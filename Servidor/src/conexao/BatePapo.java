@@ -72,7 +72,10 @@ public class BatePapo extends Thread {
                         fluxoSaida.writeUTF("Saiu da Conversa");
                     } else if (c instanceof Grupo grupo) {
                         fluxoSaida.writeUTF("Falando no Grupo " + nome);
-                        ConversaGrupo cg = new ConversaGrupo(grupo, conexao.getSocket(), this.login);
+                        ConversaGrupo cg = new ConversaGrupo(grupo, conexao, this.login);
+                        fluxoSaida.writeUTF("Se quiser sair do grupo escreva: sair do grupo");
+                        fluxoSaida.writeUTF("Se quiser sair da conversa escreva: sair");
+                        fluxoSaida.writeUTF("Se quiser adicionar novos membros escreva: add");
                         cg.start();
                         while (cg.isAlive()) {
                         }

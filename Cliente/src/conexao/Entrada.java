@@ -21,7 +21,7 @@ public class Entrada extends Thread {
                 if (msg.equals("Informe o Login: ")) {
                     System.out.print(msg);
                 } else if (msg.split(" ")[0].equals("address")) {
-                    EntradaGrupo entradaGrupo = new EntradaGrupo(Integer.parseInt(msg.split(" ")[1]));
+                    EntradaGrupo entradaGrupo = new EntradaGrupo(Integer.parseInt(msg.split(" ")[1]), msg.split(" ")[2], msg.split(" ")[3]);
                     entradaGrupo.start();
                 } else {
                     if (msg.equals("desconectado")) {
