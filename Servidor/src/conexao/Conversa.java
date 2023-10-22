@@ -8,7 +8,7 @@ import java.io.IOException;
  *
  * @author pedro
  */
-public class Conversa extends Thread {
+public class Conversa {
 
     private final String login;
     private final String destino;
@@ -30,8 +30,7 @@ public class Conversa extends Thread {
         fluxoSaida.writeUTF(login + "> " + msg);
     }
 
-    @Override
-    public void run() {
+    public void conversar(){
         while (true) {
             try {
                 DataOutputStream remetente = new DataOutputStream(cOrigem.getSocket().getOutputStream());

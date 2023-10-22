@@ -77,9 +77,7 @@ public class BatePapo extends Thread {
                     if (c instanceof User) {
                         fluxoSaida.writeUTF("SERVIDOR> Falando com " + nome);
                         Conversa cvs = new Conversa(login, c.getLogin(), fluxoEntrada, c, conexao);
-                        cvs.start();
-                        while (cvs.isAlive()) {
-                        }
+                        cvs.conversar();
                         System.out.println(login + " Saiu da Conversa");
                         fluxoSaida.writeUTF("SERVIDOR> Saiu da Conversa");
                     } else if (c instanceof Grupo grupo) {
@@ -88,9 +86,7 @@ public class BatePapo extends Thread {
                         fluxoSaida.writeUTF("SERVIDOR> Se quiser sair do grupo escreva: sair do grupo");
                         fluxoSaida.writeUTF("SERVIDOR> Se quiser sair da conversa escreva: sair");
                         fluxoSaida.writeUTF("SERVIDOR> Se quiser adicionar novos membros escreva: add");
-                        cg.start();
-                        while (cg.isAlive()) {
-                        }
+                        cg.conversarGrupo();
                         System.out.println(login + " Saiu da Conversa");
                         fluxoSaida.writeUTF("SERVIDOR> Saiu da Conversa do Grupo");
                     }

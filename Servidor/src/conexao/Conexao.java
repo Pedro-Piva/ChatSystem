@@ -17,7 +17,6 @@ public class Conexao extends Thread {
     private String login;
     private boolean online;
     private BatePapo b;
-    private String tipo;
     private ArrayList<String> mensagens;
 
     public Conexao(Socket socket, Servidor server) {
@@ -66,14 +65,6 @@ public class Conexao extends Thread {
         return online;
     }
 
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
     public String getStatus() {
         if (online) {
             return "Online";
@@ -91,13 +82,15 @@ public class Conexao extends Thread {
         }
         setOnline(false);
     }
-    public void mandarMensagens() throws IOException{
+
+    public void mandarMensagens() throws IOException {
         DataOutputStream fluxoSaida = new DataOutputStream(this.socket.getOutputStream());
-        for(String s: mensagens){
+        for (String s : mensagens) {
             fluxoSaida.writeUTF(s);
         }
         this.mensagens.clear();
     }
+
     public void armazenarMensagem(String msg) {
         this.mensagens.add(msg);
     }

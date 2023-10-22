@@ -7,7 +7,6 @@ public class User extends Conexao implements Runnable {
 
     public User(Socket socket, Servidor server) throws IOException {
         super(socket, server);
-        setTipo("User");
     }
 
     public boolean repetido(String nome) {
@@ -40,46 +39,43 @@ public class User extends Conexao implements Runnable {
         setLogin("GRUPO");
     }
 
+    public boolean login(DataInputStream fluxoEntrada, DataOutputStream fluxoSaida) throws IOException {
+        while (true) {
+            fluxoSaida.writeUTF("SERVIDOR> Informe o Login:");
+            String lixo = fluxoEntrada.readUTF();
+            System.out.println("Login Recebido: " + lixo);
+            if (repetido(lixo)) {
+                System.out.println(lixo + " Logou");
+                fluxoSaida.writeUTF("SERVIDOR> " + lixo + " Logou");
+                setLogin(lixo);
+                setOnline(true);
+                return true;
+            } else if (verificaConexaoIgual(lixo)) {
+                setLogin(lixo);
+                System.out.println(lixo + " Logou Novamente");
+                //Mensagem de sucesso de alguém relogando
+                fluxoSaida.writeUTF("SERVIDOR> " + lixo + " Logou Novamente");
+                apagar();
+                return false;
+            } else {
+                System.out.println("Login Invalido ou ja existente, tente novamente: " + lixo);
+                //Mensagem de erro
+                fluxoSaida.writeUTF("SERVIDOR> " + "Login Invalido ou ja existente, tente novamente");
+                printUsuarios();
+            }
+        }
+    }
+
     @Override
     public void run() {
         DataInputStream fluxoEntrada;
         DataOutputStream fluxoSaida;
         try {
-            if (!isOnline()) {
-                fluxoEntrada = new DataInputStream(getSocket().getInputStream());
-                fluxoSaida = new DataOutputStream(getSocket().getOutputStream());
-                boolean repetido = false;
-                while (true) {
-                    fluxoSaida.writeUTF("SERVIDOR> Informe o Login:");
-                    //Recebe da tela de login o login
-                    String lixo = fluxoEntrada.readUTF();
-                    System.out.println("Login Recebido: " + lixo);
-                    if (repetido(lixo) && !lixo.equals("")) {
-                        System.out.println(lixo + " Logou");
-                        //Mensagem de sucesso
-                        fluxoSaida.writeUTF("SERVIDOR> " + lixo + " Logou");
-                        setLogin(lixo);
-                        setOnline(true);
-                        break;
-                    } else if (verificaConexaoIgual(lixo)) {
-                        setLogin(lixo);
-                        System.out.println(lixo + " Logou Novamente");
-                        //Mensagem de sucesso de alguém relogando
-                        fluxoSaida.writeUTF("SERVIDOR> " + lixo + " Logou Novamente");
-                        apagar();
-                        repetido = true;
-                        break;
-                    } else {
-                        System.out.println("Login Invalido ou ja existente, tente novamente: " + lixo);
-                        //Mensagem de erro
-                        fluxoSaida.writeUTF("SERVIDOR> " + "Login Invalido ou ja existente, tente novamente");
-                        printUsuarios();
-                    }
-                }
-                if (!repetido) {
-                    setB(new BatePapo(fluxoSaida, fluxoEntrada, getLogin(), getServer(), this));
-                    getB().start();
-                }
+            fluxoEntrada = new DataInputStream(getSocket().getInputStream());
+            fluxoSaida = new DataOutputStream(getSocket().getOutputStream());
+            if (login(fluxoEntrada, fluxoSaida)) {
+                setB(new BatePapo(fluxoSaida, fluxoEntrada, getLogin(), getServer(), this));
+                getB().start();
             }
             while (getB().isAlive()) {
             }

@@ -10,7 +10,7 @@ public class Servidor extends Thread {
     private final ArrayList<Conexao> conexoes = new ArrayList();
     private final ServerSocket servidor;
     private int port;
-    
+
     public Servidor() throws IOException {
         this.servidor = new ServerSocket(1234);
         port = 6000;
@@ -28,10 +28,11 @@ public class Servidor extends Thread {
         this.conexoes.remove(c);
     }
 
-    public int getPort(){
+    public int getPort() {
         this.port += 15;
         return port - 15;
     }
+
     @Override
     public void run() {
         while (true) {

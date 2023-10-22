@@ -12,7 +12,7 @@ import java.io.IOException;
  *
  * @author pedro
  */
-public class ConversaGrupo extends Thread {
+public class ConversaGrupo {
 
     private final Grupo grupo;
     private final DataInputStream fluxoEntrada;
@@ -28,8 +28,7 @@ public class ConversaGrupo extends Thread {
         this.fluxoSaida = new DataOutputStream(conexao.getSocket().getOutputStream());
     }
 
-    @Override
-    public void run() {
+    public void conversarGrupo() {
         OUTER:
         while (true) {
             try {
