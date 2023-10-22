@@ -40,5 +40,4 @@ public class Saida extends Thread {
             Logger.getLogger(Saida.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
 }
